@@ -48,7 +48,7 @@ namespace Quantum.Kata.BasicGates
             // Type X(q);
             // Then rebuild the project and rerun the tests - T11_StateFlip_Test should now pass!
             
-            // ...
+            X(q);
         }
         adjoint self;
     }
@@ -65,7 +65,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            H(q);
         }
         adjoint self;
     }
@@ -77,7 +77,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            Z(q);
         }
         adjoint self;
     }
@@ -94,7 +94,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+			Ry(alpha * 2.0, q);
         }
         adjoint auto;
     }
@@ -106,7 +106,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            S(q);
         }
         adjoint auto;
     }
@@ -123,7 +123,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            Rz(alpha, q);
         }
         adjoint auto;
     }
@@ -135,7 +135,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            Z(qs[0]);
         }
         adjoint auto;
     }
@@ -147,7 +147,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            X(qs[0]);
         }
         adjoint auto;
     }
@@ -159,7 +159,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+			Y(qs[0]);
         }
         adjoint auto;
     }
@@ -181,7 +181,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            CNOT(qs[0], qs[1]);
         }
         adjoint self;
     }
@@ -196,7 +196,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            (Controlled Z)([qs[0]], qs[1]);
         }
         adjoint self;
     }
@@ -213,7 +213,12 @@ namespace Quantum.Kata.BasicGates
             // as an exercise, try to express the solution using several 
             // (possibly controlled) Pauli gates.
 
-            // ...
+            SWAP(qs[0], qs[1]);
+
+			// Or with several:
+			//CNOT(qs[0], qs[1]);
+			//CNOT(qs[1], qs[0]);
+			//CNOT(qs[0], qs[1]);
         }
         adjoint self;
     }
@@ -228,7 +233,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            CCNOT(qs[0], qs[1], qs[2]);
         }
         adjoint self;
     }
@@ -242,7 +247,7 @@ namespace Quantum.Kata.BasicGates
     {
         body
         {
-            // ...
+            (Controlled SWAP)([qs[0]], (qs[1], qs[2]));
         }
         adjoint self;
     }
