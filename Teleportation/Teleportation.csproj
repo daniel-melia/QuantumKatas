@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Quantum.Kata.DeutschJozsaAlgorithm</RootNamespace>
+    <RootNamespace>Quantum.Kata.Teleportation</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
