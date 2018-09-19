@@ -62,7 +62,7 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // Since f(x) = 1 for all values of x, |y ⊕ f(x)⟩ = |y ⊕ 1⟩ = |NOT y⟩.
             // This means that the operation needs to flip qubit y (i.e. transform |0⟩ to |1⟩ and vice versa).
 
-            // ...
+            X(y);
         }
     }
 
@@ -80,7 +80,7 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // You don't need to modify it. Feel free to remove it, this won't cause your code to fail.
             AssertBoolEqual(0 <= k && k < Length(x), true, "k should be between 0 and N-1, inclusive");
 
-            // ...
+            CNOT(x[k], y);
         }
     }
 
@@ -95,7 +95,10 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
         {
             // Hint: f(x) can be represented as x_0 ⊕ x_1 ⊕ ... ⊕ x_(N-1)
 
-            // ...
+            for (i in 0 .. Length(x) - 1)
+			{
+				CNOT(x[i], y);
+			}
         }
     }
 
@@ -116,7 +119,13 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // You don't need to modify it. Feel free to remove it, this won't cause your code to fail.
             AssertIntEqual(Length(x), Length(r), "Arrays should have the same length");
 
-            // ...
+            for (i in 0 .. Length(x) - 1)
+			{
+				if (r[i] == 1)
+				{
+					CNOT(x[i], y);
+				}
+			}
         }
     }
 
@@ -135,7 +144,19 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // You don't need to modify it. Feel free to remove it, this won't cause your code to fail.
             AssertIntEqual(Length(x), Length(r), "Arrays should have the same length");
 
-            // ...
+            for (i in 0 .. Length(x) - 1)
+			{
+				if (r[i] == 1)
+				{
+					CNOT(x[i], y);
+				}
+				else
+				{
+					X(x[i]);
+					CNOT(x[i], y);
+					X(x[i]);
+				}
+			}
         }
     }
 
@@ -159,12 +180,31 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
 
             // Hint: the first part of the function is the same as in task 1.4
 
-            // ...
+            for (i in 0 .. Length(x) - 1)
+			{
+				CNOT(x[i], y);
+			}
 
             // Hint: you can use Controlled functor to perform multicontrolled gates
             // (gates with multiple control qubits).
 
-            // ...
+            for (i in 0 .. P - 1)
+			{		
+				if (prefix[i] == 0)
+				{
+					X(x[i]);
+				}			
+			}
+
+			(Controlled X)(x[0 .. P - 1], y);
+
+            for (i in 0 .. P - 1)
+			{		
+				if (prefix[i] == 0)
+				{
+					X(x[i]);
+				}			
+			}
         }
     }
 
@@ -183,7 +223,9 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             
             // Hint: represent f(x) in terms of AND and ⊕ operations
 
-            // ...
+            CCNOT(x[0], x[1], y);
+			CCNOT(x[1], x[2], y);
+			CCNOT(x[0], x[2], y);
         }
     }
 
@@ -204,7 +246,13 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
     {
         body
         {
-            // ...
+            for (i in 0 .. Length(query) - 1)
+			{
+				H(query[i]);
+			}
+
+			X(answer);
+			H(answer);
         }
         adjoint auto;
     }
@@ -231,7 +279,28 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // the array has to be mutable to allow updating its elements.
             mutable r = new Int[N];
 
-            // ...
+            using (register = Qubit[N + 1])
+			{
+				let x = register[0 .. N - 1];
+				let y = register[N];
+
+				BV_StatePrep(x, y);
+
+				Uf(x, y);
+
+				for (i in 0 .. N - 1)
+				{
+					H(x[i]);
+
+					if (M(x[i]) == One)
+					{
+						set r[i] = 1;
+						X(x[i]);
+					}
+				}
+
+				Reset(y);
+			}
 
             return r;
         }
@@ -258,8 +327,18 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // matches the expected value (i.e. the bit vector passed to Oracle_ProductFunction).
 
             // BV_Test appears in the list of unit tests for the solution; run it to verify your code.
+	
+			let numberOfQubits = 1 + Random([1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0]);
+			mutable expected = new Int[numberOfQubits];
 
-            // ...
+			for (i in 0 .. numberOfQubits - 1)
+			{
+				set expected[i] = Random([1.0; 1.0]);
+			}
+
+            let oracle = Oracle_ProductFunction(_, _, expected);
+			let actual = BV_Algorithm(numberOfQubits, oracle);
+			AssertIntArrayEqual(actual, expected, "The bit vector used by the oracle was not correctly determined.");
         }
     }
 
@@ -296,7 +375,15 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // it can be expressed as running Bernstein-Vazirani algorithm
             // and then post-processing the return value classically
 
-            // ...
+            let bvResult = BV_Algorithm(N, Uf);
+				
+			for (i in 0 .. N - 1)
+			{
+				if (bvResult[i] == 1)
+				{
+					set isConstantFunction = false;
+				}
+			}			
 
             return isConstantFunction;
         }
@@ -316,7 +403,23 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
 
             // DJ_Test appears in the list of unit tests for the solution; run it to verify your code.
 
-            // ...
+			let numberOfQubits = 5 + Random([1.0; 1.0; 1.0; 1.0; 1.0; 1.0]);
+			let kthQubit = Random([1.0; 1.0; 1.0; 1.0; 1.0; 1.0]);
+			mutable bitVector = new Int[numberOfQubits];
+			
+			for (i in 0 .. numberOfQubits - 1)
+			{
+				set bitVector[i] = Random([1.0; 1.0]);
+			}
+
+            AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_Zero), true, "The oracle is constant.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_One), true, "The oracle is constant.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_Kth_Qubit(_, _, kthQubit)), false, "The oracle is balanced.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_OddNumberOfOnes), false, "The oracle is balanced.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_ProductFunction(_, _, bitVector)), false, "The oracle is balanced.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_ProductWithNegationFunction(_, _, bitVector)), false, "The oracle is balanced.");
+			AssertBoolEqual(DJ_Algorithm(numberOfQubits, Oracle_HammingWithPrefix(_, _, bitVector)), false, "The oracle is balanced.");
+			AssertBoolEqual(DJ_Algorithm(3, Oracle_MajorityFunction), false, "The oracle is balanced.");			
         }
     }
 
@@ -343,7 +446,27 @@ namespace Quantum.Kata.DeutschJozsaAlgorithm
             // the array has to be mutable to allow updating its elements.
             mutable r = new Int[N];
 
-            // ...
+            using (register = Qubit[N + 1])
+			{
+				let x = register[0 .. N - 1];
+				let y = register[N];
+
+				Uf(x, y);
+
+				let oracleResult = M(y);
+				
+				if (N % 2 == 1 && oracleResult == Zero)
+				{
+					set r[0] = 1;
+				}
+				
+				if (N % 2 == 0 && oracleResult == One)
+				{
+					set r[0] = 1;
+				}
+
+				Reset(y);
+			}
 
             return r;
         }
