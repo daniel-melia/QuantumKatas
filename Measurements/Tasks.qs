@@ -38,8 +38,7 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return false;
+            return BoolFromResult(M(q));
         }
     }
 
@@ -52,8 +51,8 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return false;
+			H(q);
+            return Zero == M(q);
         }
     }
 
@@ -69,8 +68,8 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return false;
+            Ry(alpha * -2.0, q);
+            return Zero == M(q);
         }
     }
 
@@ -83,8 +82,7 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+		    return ResultAsInt([M(qs[0])]);
         }
     }
 
@@ -103,8 +101,19 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			mutable result = 0;
+			
+			if (M(qs[0]) == One)
+			{
+				set result = result + 2;
+			}
+
+			if (M(qs[1]) == One)
+			{
+				set result = result + 1;
+			}
+
+            return result;
         }
     }
 
@@ -126,8 +135,17 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			mutable result = 0;
+
+            for (i in 0 .. Length(qs) - 1)
+			{
+				if (BoolFromResult(M(qs[i])) != bits1[i])
+				{
+					set result = 1;
+				}
+			}
+
+            return result;
         }
     }
 
@@ -142,13 +160,22 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			mutable result = 0;
+
+            for (i in 0 .. Length(qs) - 1)
+			{
+				if (BoolFromResult(M(qs[i])))
+				{
+					set result = 1;
+				}
+			}
+
+            return result;
         }
     }
 
     // Task 1.8. GHZ state or W state ?
-    // Input: N >= 2 qubits (stored in an array) which are guaranteed to be 
+    // Input: N qubits (stored in an array) which are guaranteed to be 
     //        either in GHZ state (https://en.wikipedia.org/wiki/Greenberger%E2%80%93Horne%E2%80%93Zeilinger_state)
     //        or in W state (https://en.wikipedia.org/wiki/W_state).
     // Output: 0 if qubits were in GHZ state,
@@ -158,8 +185,18 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			let firstResult = M(qs[0]);
+			mutable result = 0;
+
+            for (i in 1 .. Length(qs) - 1)
+			{
+				if (M(qs[i]) != firstResult)
+				{
+					set result = 1;
+				}
+			}
+
+            return result;
         }
     }
 
@@ -180,8 +217,22 @@ namespace Quantum.Kata.Measurements
         {
             // Hint: you need to use 2-qubit gates to solve this task
 
-            // ...
-            return -1;
+			mutable result = 0;
+
+            CNOT(qs[0], qs[1]);
+			H(qs[0]);
+
+			if (M(qs[0]) == One)
+			{
+				set result = result + 1;
+			}
+
+			if (M(qs[1]) == One)
+			{
+				set result = result + 2;
+			}
+
+            return result;
         }
     }
 
@@ -200,8 +251,22 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			mutable result = 0;
+
+			H(qs[0]);
+			H(qs[1]);
+
+			if (M(qs[0]) == One)
+			{
+				set result = result + 2;			
+			}
+
+			if (M(qs[1]) == One)
+			{
+				set result = result + 1;
+			}
+
+            return result;
         }
     }
 
@@ -220,8 +285,23 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -1;
+			mutable result = 0;
+
+            (Controlled Z)([qs[0]], qs[1]);
+			H(qs[0]);
+            H(qs[1]);
+
+			if (M(qs[0]) == Zero)
+			{
+				set result = result + 1;			
+			}
+            
+			if (M(qs[1]) == Zero)
+			{
+				set result = result + 2;
+			}
+
+            return result;
         }
     }
 
@@ -246,8 +326,16 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return true; 
+            mutable result = true;
+
+            Ry(PI() / 4.0, q);
+
+            if (M(q) == One)
+            {
+                set result = false;
+            }
+
+            return result; 
         }
     }
 
@@ -269,8 +357,27 @@ namespace Quantum.Kata.Measurements
     {
         body
         {
-            // ...
-            return -2;
+            mutable result = -1;
+            mutable basis = PauliZ;
+            
+            if (RandomInt(2) == 1)
+            {
+                set basis = PauliX;
+            }
+
+            if (Measure([basis], [q]) == One)
+            {
+                if (basis == PauliZ)
+                {
+                    set result = 1;
+                }
+                else
+                {
+                    set result = 0;
+                }
+            }
+
+            return result;
         }
     }
 }
