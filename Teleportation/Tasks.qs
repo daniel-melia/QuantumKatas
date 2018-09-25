@@ -44,8 +44,10 @@ namespace Quantum.Kata.Teleportation
     // qubits qAlice and qBob will be sent to Alice and Bob, respectively. 
     operation Entangle (qAlice : Qubit, qBob : Qubit) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            H(qAlice);
+            CNOT(qAlice, qBob);
         }
     }
 
@@ -63,9 +65,13 @@ namespace Quantum.Kata.Teleportation
     // The state of the qubits in the end of the operation doesn't matter.
     operation SendMessage (qAlice : Qubit, qMessage : Qubit) : (Bool, Bool)
     {
-        body {
-            // ...
-            return (false, false);
+        body 
+        {   
+            CNOT(qMessage, qAlice);
+            H(qMessage);
+            let b1 = BoolFromResult(M(qMessage));
+            let b2 = BoolFromResult(M(qAlice));
+            return (b1, b2);
         }
     }
 
@@ -79,8 +85,17 @@ namespace Quantum.Kata.Teleportation
     // Goal: transform Bob's qubit qBob into the state in which the message qubit has been originally.
     operation ReconstructMessage (qBob : Qubit, (b1 : Bool, b2 : Bool)) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            if (b1)
+            {
+                Z(qBob);
+            }
+
+            if (b2)
+            {
+                X(qBob);
+            }
         }
     }
 
@@ -94,8 +109,11 @@ namespace Quantum.Kata.Teleportation
     // The state of the qubits qAlice and qBob in the end of the operation doesn't matter.
     operation StandardTeleport (qAlice : Qubit, qBob : Qubit, qMessage : Qubit) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            Entangle(qAlice, qBob);
+            let (b1, b2) = SendMessage(qAlice, qMessage);
+            ReconstructMessage(qBob, (b1, b2));
         }
     }
 
@@ -118,24 +136,51 @@ namespace Quantum.Kata.Teleportation
     // Task 2.1. Reconstruct the message if the entangled qubits were in the state |Φ⁻⟩ = (|00⟩ - |11⟩) / sqrt(2).
     operation ReconstructMessage_PhiMinus (qBob : Qubit, (b1 : Bool, b2 : Bool)) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            if (b1 == false)
+            {
+                Z(qBob);
+            }
+
+            if (b2)
+            {
+                X(qBob);
+            }
         }
     }
 
     // Task 2.2. Reconstruct the message if the entangled qubits were in the state |Ψ⁺⟩ = (|01⟩ + |10⟩) / sqrt(2).
     operation ReconstructMessage_PsiPlus (qBob : Qubit, (b1 : Bool, b2 : Bool)) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            if (b1)
+            {
+                Z(qBob);
+            }
+
+            if (b2 == false)
+            {
+                X(qBob);
+            }
         }
     }
 
     // Task 2.3. Reconstruct the message if the entangled qubits were in the state |Ψ⁻⟩ = (|01⟩ - |10⟩) / sqrt(2).
     operation ReconstructMessage_PsiMinus (qBob : Qubit, (b1 : Bool, b2 : Bool)) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            if (b1 == false)
+            {
+                Z(qBob);
+            }
+
+            if (b2 == false)
+            {
+                X(qBob);
+            }
         }
     }
 
@@ -158,8 +203,13 @@ namespace Quantum.Kata.Teleportation
     // At the end of the operation qubits qAlice and qMessage should not be entangled with qBob.
     operation MeasurementFreeTeleport (qAlice : Qubit, qBob : Qubit, qMessage : Qubit) : ()
     {
-        body {
-            // ...
+        body 
+        {
+            CNOT(qMessage, qAlice);
+            H(qMessage);
+
+            (Controlled Z)([qMessage], qBob);
+            CNOT(qAlice, qBob);
         }
     }
 }
