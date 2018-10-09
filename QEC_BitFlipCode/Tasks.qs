@@ -37,10 +37,23 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     // Example:
     // |000⟩, |101⟩ and |011⟩ all have parity 0, while |010⟩ and |111⟩ have parity 1.
     operation MeasureParity (register : Qubit[]) : Result {
-        body {
+        body 
+        {
             // Fill in your code here and change the return statement.
-            // ...
-            return Zero;
+            
+            mutable parity = Zero;
+
+            using (qs = Qubit[1])
+            {
+                let ancilla = qs[0];
+                CNOT(register[0], ancilla);
+                CNOT(register[1], ancilla);
+                CNOT(register[2], ancilla);
+                set parity = M(ancilla);
+                Reset(ancilla);
+            }
+            
+            return parity;
         }
     }
 
@@ -50,8 +63,10 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     //        the state of the first qubit, i.e., register[0].
     // Goal: create a state |̅ψ⟩ ≔ α |000⟩ + β |111⟩ on these qubits.
     operation Encode (register : Qubit[]) : () {
-        body {
-            // ...
+        body 
+        {
+            CNOT(register[0], register[1]);
+            CNOT(register[0], register[2]);
         }
     }
 
@@ -65,9 +80,20 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     //         One if the input is X𝟙𝟙|̅ψ⟩ (state with the error).
     // After applying the operation the state of the qubits should not change.
     operation DetectErrorOnLeftQubit (register : Qubit[]) : Result {
-        body {
-            // ...
-            return Zero;
+        body 
+        {
+            mutable error = Zero;
+
+            using (qs = Qubit[1])
+            {
+                let ancilla = qs[0];
+                CNOT(register[0], ancilla);
+                CNOT(register[1], ancilla);
+                set error = M(ancilla);               
+                Reset(ancilla);
+            }
+            
+            return error;
         }
     }
 
@@ -78,9 +104,14 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     // Goal: make sure that the qubits are returned to the state |̅ψ⟩
     //       (i.e., determine whether an X error has occurred, and if so, fix it).
     operation CorrectErrorOnLeftQubit (register : Qubit[]) : () {
-        body {
+        body 
+        {
             // Hint: you can use task 3 to figure out which state you are given.
-            // ...
+            
+            if (DetectErrorOnLeftQubit(register) == One)
+            {
+                X(register[0]);
+            }
         }
     }
 
@@ -98,9 +129,39 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     // 𝟙𝟙X   | 3
     // After applying the operation the state of the qubits should not change.
     operation DetectErrorOnAnyQubit (register : Qubit[]) : Int {
-        body {
-            // ...
-            return -1;
+        body 
+        {
+            mutable errorCode = 0;
+            
+            using (qs = Qubit[2])
+            {
+                let ancilla1 = qs[0];
+                CNOT(register[0], ancilla1);
+                CNOT(register[1], ancilla1);
+                let parity1 = M(ancilla1) == One;
+
+                let ancilla2 = qs[1];
+                CNOT(register[1], ancilla2);
+                CNOT(register[2], ancilla2);
+                let parity2 = M(ancilla2) == One;
+
+                if (parity1 && !parity2)
+                {
+                    set errorCode = 1;
+                }
+                elif (parity1 && parity2)
+                {
+                    set errorCode = 2;
+                }
+                elif (!parity1 && parity2)
+                {
+                    set errorCode = 3;
+                }
+         
+                ResetAll(qs);
+            }
+
+            return errorCode;
         }
     }
 
@@ -112,8 +173,14 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     // Goal: make sure that the qubits are returned to the state |̅ψ⟩
     //       (i.e., determine whether an X error has occurred on any qubit, and if so, fix it).
     operation CorrectErrorOnAnyQubit (register : Qubit[]) : () {
-        body {
-            // ...
+        body 
+        {
+            let errorCode = DetectErrorOnAnyQubit(register);
+
+            if (errorCode != 0)
+            {
+                X(register[errorCode - 1]);
+            }
         }
     }
 
@@ -137,8 +204,9 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     //       ̅X |̅ψ⟩ with an X error applied to one of the qubits (for example, β |010⟩ + α |101⟩).
     // If the state has an error, you can fix it, but this is not necessary.
     operation LogicalX (register : Qubit[]) : () {
-        body {
-            // ...
+        body 
+        {
+            ApplyToEach(X, register);
         }
     }
 
@@ -152,8 +220,9 @@ namespace Quantum.Kata.QEC_BitFlipCode {
     //       ̅Z |̅ψ⟩ with an X error applied to one of the qubits (for example, α |010⟩ - β |101⟩).
     // If the state has an error, you can fix it, but this is not necessary.
     operation LogicalZ (register : Qubit[]) : () {
-        body {
-            // ...
+        body 
+        {
+            ApplyToEach(Z, register);
         }
     }
 }
