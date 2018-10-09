@@ -32,7 +32,7 @@ namespace Quantum.Kata.SimonsAlgorithm
     {
         body
         {
-            // ...
+            ApplyToEachA(CNOT(_, y), x);
         }
         adjoint auto;
     }
@@ -47,7 +47,10 @@ namespace Quantum.Kata.SimonsAlgorithm
     {
         body 
         {
-            // ...
+            for (i in 0 .. Length(x) - 2)
+            {
+                CNOT(x[i], y[i + 1]);
+            }
         }
         adjoint auto;
     }
@@ -67,7 +70,13 @@ namespace Quantum.Kata.SimonsAlgorithm
             // You don't need to modify it. Feel free to remove it, this won't cause your code to fail.
             AssertIntEqual(Length(x), Length(A), "Arrays x and A should have the same length");
 
-            // ...
+            for (i in 0 .. Length(x) - 1)
+            {
+                if (A[i] == 1)
+                {
+                    CNOT(x[i], y);
+                }
+            }
         }
         adjoint auto;
     }
@@ -91,7 +100,16 @@ namespace Quantum.Kata.SimonsAlgorithm
             AssertIntEqual(Length(x), Length(A[0]), "Arrays x and A[0] should have the same length");
             AssertIntEqual(Length(y), Length(A), "Arrays y and A should have the same length");
 
-            // ...
+            for (r in 0 .. Length(y) - 1)
+            {
+                for (c in 0 .. Length(x) - 1)
+                {
+                    if (A[r][c] == 1)
+                    {
+                        CNOT(x[c], y[r]);
+                    }
+                }
+            }
         }
         adjoint auto;
     }
@@ -110,7 +128,7 @@ namespace Quantum.Kata.SimonsAlgorithm
     {
         body
         {
-            // ...
+            ApplyToEachA(H, query);
         }
         adjoint auto;
     }
@@ -143,7 +161,24 @@ namespace Quantum.Kata.SimonsAlgorithm
             // the array has to be mutable to allow updating its elements.
             mutable b = new Int[N];
 
-            // ...            
+            using (qs = Qubit[2 * N])
+            {
+                let x = qs[0 .. N - 1];
+                let y = qs[N .. 2 * N - 1];
+                SA_StatePrep(x);
+                Uf(x, y);
+                SA_StatePrep(x);
+                
+                for (i in 0 .. N - 1)
+                {
+                    if (M(x[i]) == One)
+                    {
+                        set b[i] = 1;
+                    }
+                }
+
+                ResetAll(qs);
+            }
 
             return b;
         }
