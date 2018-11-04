@@ -38,7 +38,7 @@ namespace Quantum.Kata.Superposition
             // Type H(qs[0]);
             // Then rebuild the project and rerun the tests - T01_PlusState_Test should now pass!
 
-            // ...
+            H(qs[0]);
         }
     }
 
@@ -51,7 +51,8 @@ namespace Quantum.Kata.Superposition
         {
             // In this task, as well as in all subsequent ones, you have to come up with the solution yourself.
             
-            // ...
+            X(qs[0]);
+			H(qs[0]);
         }
     }
 
@@ -67,7 +68,7 @@ namespace Quantum.Kata.Superposition
             // Hint: Experiment with rotation gates from Microsoft.Quantum.Primitive namespace.
             // Note that all rotation operators rotate the state by _half_ of its angle argument.
 
-            // ...
+            Ry(alpha * 2.0, qs[0]);
         }
     }
 
@@ -78,7 +79,8 @@ namespace Quantum.Kata.Superposition
     {
         body
         {
-            // ...
+            H(qs[0]);
+			CNOT(qs[0], qs[1]);
         }
     }
 
@@ -95,7 +97,18 @@ namespace Quantum.Kata.Superposition
     {
         body
         {
-            // ...
+			if (index % 2 == 1)
+			{
+				X(qs[0]);
+			}
+
+			if (index > 1)
+			{
+				X(qs[1]);
+			}
+
+            H(qs[0]);
+			CNOT(qs[0], qs[1]);
         }
     }
 
@@ -107,8 +120,13 @@ namespace Quantum.Kata.Superposition
         body
         {
             // Hint: N can be found as Length(qs).
+			
+			H(qs[0]);
 
-            // ...
+            for (i in 0 .. Length(qs) - 2)
+			{
+				CNOT(qs[i], qs[i + 1]);
+			}
         }
     }
 
@@ -120,7 +138,10 @@ namespace Quantum.Kata.Superposition
     {
         body
         {
-            // ...
+            for (i in 0 .. Length(qs) - 1)
+			{
+				H(qs[i]);
+			}
         }
     }
 
@@ -142,7 +163,15 @@ namespace Quantum.Kata.Superposition
             AssertIntEqual(Length(bits), Length(qs), "Arrays should have the same length");
             AssertBoolEqual(bits[0], true, "First bit of the input bit string should be set to true");
 
-            // ...
+			H(qs[0]);
+
+            for (i in 1 .. Length(qs) - 1)
+			{
+				if (bits[i] == true)
+				{
+					CNOT(qs[0], qs[i]);
+				}
+			}
         }
     }
 
@@ -160,9 +189,43 @@ namespace Quantum.Kata.Superposition
     {
         body
         {
-            // ...
+			let controlIndex = findControlIndex(bits1, bits2);		
+			H(qs[controlIndex]);
+
+            for (i in 0 .. Length(qs) - 1)
+			{		
+				if (bits1[i] != bits2[i])
+				{
+					if (i > controlIndex)
+					{
+						CNOT(qs[controlIndex], qs[i]);
+
+						if (bits1[i] != bits1[controlIndex])
+						{
+							X(qs[i]);
+						}
+					}				
+				}
+				elif (bits1[i] == true && bits2[i] == true)
+				{
+					X(qs[i]);
+				}
+			}
         }
     }
+
+	function findControlIndex(bits1 : Bool[], bits2 : Bool[]) : (Int)
+	{
+		for (i in 0 .. Length(bits1) - 1)
+		{
+			if (bits1[i] != bits2[i])
+			{
+				return i;
+			}
+		}
+
+		return 0;
+	}
 
     // Task 10**. W state on 2^k qubits
     // Input: N = 2^k qubits in |0...0⟩ state.
